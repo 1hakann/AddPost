@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/android_graph"
+    app:startDestination="@id/listFragment">
+
+    <fragment
+        android:id="@+id/listFragment"
+        android:name="com.badlogic.androidgames.addpost.ListFragment"
+        android:label="fragment_list"
+        tools:layout="@layout/fragment_list" >
+        <action
+            android:id="@+id/action_listFragment_to_contextFragment"
+            app:destination="@id/contextFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/contextFragment"
+        android:name="com.badlogic.androidgames.addpost.ContextFragment"
+        android:label="fragment_context"
+        tools:layout="@layout/fragment_context" >
+        <action
+            android:id="@+id/action_contextFragment_to_listFragment"
+            app:destination="@id/listFragment" />
+    </fragment>
+</navigation>
