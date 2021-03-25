@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="Category">
+        <item>Sinema</item>
+        <item>Dizi</item>
+        <item>Felsefe</item>
+        <item>Teknoloji</item>
+        <item>Bilim</item>
+        <item>Yaşam</item>
+    </string-array>
+</resources>
