@@ -1,6 +1,7 @@
 package com.badlogic.androidgames.addpost
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -16,7 +17,9 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.navigation.Navigation
 import kotlinx.android.synthetic.main.fragment_context.*
+import java.io.ByteArrayOutputStream
 import java.lang.Exception
 import java.util.jar.Manifest
 
@@ -25,7 +28,6 @@ class ContextFragment : Fragment() {
 
     var secilenGorsel: Uri? = null
     var secilenBitmap: Bitmap? = null
-    var secilenImage: ImageView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +45,10 @@ class ContextFragment : Fragment() {
 
         btnKaydet.setOnClickListener {
             Kaydet(it)
+        }
+
+        ivImg.setOnClickListener {
+            ResimSec(it)
         }
     }
 
@@ -70,7 +76,10 @@ class ContextFragment : Fragment() {
                         if (Build.VERSION.SDK_INT >= 28) {
                             val source = ImageDecoder.createSource(it.contentResolver, secilenGorsel!!)
                             secilenBitmap = ImageDecoder.decodeBitmap(source)
-                            //secilenImage!!.setImageBitmap(secilenBitmap)
+                            ivImg.setImageBitmap(secilenBitmap)
+                        } else {
+                            secilenBitmap = MediaStore.Images.Media.getBitmap(it.contentResolver, secilenGorsel)
+                            ivImg.setImageBitmap(secilenBitmap)
                         }
                     }
                 }
@@ -83,7 +92,35 @@ class ContextFragment : Fragment() {
     }
 
     fun Kaydet(view:View) {
-        println("kayıt butonuna tıklandı.")
+        //kotlin android extension kullandığımız için bu şkeilde alabiliyoruz.
+        val postBaslik = tvHeader.text.toString()
+        val postContext = tvPost.text.toString()
+        if(secilenBitmap != null) {
+            val kucukBitmap = bitmapKucult(secilenBitmap!!, 300) //ideal değeri deneyerek bul.
+            val outputStream = ByteArrayOutputStream()
+            kucukBitmap.compress(Bitmap.CompressFormat.PNG, 70, outputStream)
+            val byteDizisi = outputStream.toByteArray()
+
+            // SQL e Kaydetme İşlemi
+            try {
+                context?.let {
+                    val db = it.openOrCreateDatabase("posts", Context.MODE_PRIVATE, null)
+                    db.execSQL("CREATE TABLE IF NOT EXISTS posts (id INTEGER PRIMARY KEY, postbaslik VARCHAR, posticerik VARCHAR, gorsel BLOB)")
+                    val sqlString = "INSERT INTO posts (postbaslik, posticerik, gorsel) VALUES (?,?,?)"
+                    val statement = db.compileStatement(sqlString)
+                    statement.bindString(1,postBaslik)
+                    statement.bindString(2,postContext)
+                    statement.bindBlob(3,byteDizisi)
+                    statement.execute()
+
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            // listfragmana geri dönüldüğü anı da kodlamalıyız
+            val action = ContextFragmentDirections.actionContextFragmentToListFragment()
+            Navigation.findNavController(view).navigate(action)
+        }
 
     }
 
@@ -98,8 +135,24 @@ class ContextFragment : Fragment() {
                 startActivityForResult(galeryIntent,2)
             }
         }
+    }
 
+    fun bitmapKucult(userSelectBitmap: Bitmap, maxSize: Int) : Bitmap {
+        var width = userSelectBitmap.width
+        var height = userSelectBitmap.height
+        var bitmapOrani : Double = width.toDouble() / height.toDouble()
+        if(bitmapOrani > 1) {
+            //gorsel yatay
+            width = maxSize
+            var kisaltilmisHeight = width / bitmapOrani
+            height = kisaltilmisHeight.toInt()
+        } else {
+            // gorsel dikey
+            height = maxSize
+            var kisaltilmisWidth = height * bitmapOrani
+            width = kisaltilmisWidth.toInt()
+        }
 
-
+        return Bitmap.createScaledBitmap(userSelectBitmap, width/2, height/2, true)
     }
 }
