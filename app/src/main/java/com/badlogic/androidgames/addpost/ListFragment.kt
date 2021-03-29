@@ -1,12 +1,17 @@
 package com.badlogic.androidgames.addpost
 
+import android.content.AbstractThreadedSyncAdapter
 import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.navigation.Navigation
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import kotlinx.android.synthetic.main.fragment_list.*
 import java.lang.Exception
 
 
@@ -14,6 +19,7 @@ class ListFragment : Fragment() {
 
     val postIdListesi = ArrayList<Int>()
     val postBaslikListesi = ArrayList<String>()
+    private lateinit var listAdapter: ListRecyclerAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +34,10 @@ class ListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        listAdapter = ListRecyclerAdapter(postBaslikListesi, postIdListesi)
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView.adapter = listAdapter
 
         sqlVeriAlma()
     }
