@@ -23,13 +23,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         //Bu kısımda yukarıda tanımladığımız bileşenlerle xml olarak hazırladığımız bileşenleri birbirlerine bağlıyoruz.
-        user = findViewById<View>(R.id.tvMail) as TextView
-        pass = findViewById<View>(R.id.tvPass) as TextView
+      //  user = findViewById<View>(R.id.tvMail) as TextView
+       // pass = findViewById<View>(R.id.tvPass) as TextView
 
-        fun btnLogin(view: View?) {
+      /*  fun btnLogin(view: View?) {
             val kullanici = user!!.text.toString()
             val parola = pass!!.text.toString()
-        }
+        } */
 
     }
 
@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.app_menu) {
-            val action = ListFragmentDirections.actionListFragmentToContextFragment()
+            val action = ListFragmentDirections.actionListFragmentToContextFragment("bilgidenGeldim",0)
             Navigation.findNavController(this, R.id.fragment).navigate(action)
         }
         return super.onOptionsItemSelected(item)

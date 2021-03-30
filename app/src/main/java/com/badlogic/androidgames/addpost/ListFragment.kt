@@ -48,7 +48,7 @@ class ListFragment : Fragment() {
             activity?.let {
                 val db = it.openOrCreateDatabase("posts", Context.MODE_PRIVATE, null)
                 val cursor = db.rawQuery("SELECT * FROM posts", null)
-                val postBaslikIndex = cursor.getColumnIndex("postBaslik")
+                val postBaslikIndex = cursor.getColumnIndex("postbaslik")
                 val postIdIndex = cursor.getColumnIndex("id")
 
                 postIdListesi.clear()
@@ -60,6 +60,7 @@ class ListFragment : Fragment() {
                     postBaslikListesi.add(cursor.getString(postBaslikIndex))
 
                 }
+                listAdapter.notifyDataSetChanged()
 
                 cursor.close()
             }

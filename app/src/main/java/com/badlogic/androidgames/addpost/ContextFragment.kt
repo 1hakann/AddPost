@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
@@ -14,14 +15,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.Navigation
 import kotlinx.android.synthetic.main.fragment_context.*
 import java.io.ByteArrayOutputStream
 import java.lang.Exception
-import java.util.jar.Manifest
 
 
 class ContextFragment : Fragment() {
@@ -49,6 +47,45 @@ class ContextFragment : Fragment() {
 
         ivImg.setOnClickListener {
             ResimSec(it)
+        }
+
+        arguments?.let {
+            var gelenBilgi = ContextFragmentArgs.fromBundle(it).bilgi
+            if (gelenBilgi.equals("menudenGeldim")) {
+                //yeni içerik eklemeye geldi
+                tvHeader.setText("")
+                tvPost.setText("")
+                btnKaydet.visibility = View.VISIBLE
+
+                val gorselArkaPlan = BitmapFactory.decodeResource(context?.resources, R.drawable.backk)
+                ivImg.setImageBitmap(gorselArkaPlan)
+            } else {
+                //eklenen içerikler
+                btnKaydet.visibility = View.INVISIBLE
+                val secilenId = ContextFragmentArgs.fromBundle(it).id
+                context?.let {
+                    try {
+                        val db = it.openOrCreateDatabase("posts", Context.MODE_PRIVATE, null)
+                        val cursor = db.rawQuery("SELECT * FROM posts WHERE id = ?", arrayOf(secilenId.toString()))
+
+                        val postBaslikIndex = cursor.getColumnIndex("postbaslik")
+                        val postIcerikIndex = cursor.getColumnIndex("posticerik")
+                        val postGorsel = cursor.getColumnIndex("gorsel")
+
+                        while (cursor.moveToNext()) {
+                            tvHeader.setText(cursor.getString(postBaslikIndex))
+                            tvPost.setText(cursor.getString(postIcerikIndex))
+                            val byteDizisi = cursor.getBlob(postGorsel)
+                            val bitmap = BitmapFactory.decodeByteArray(byteDizisi, 0, byteDizisi.size)
+                            ivImg.setImageBitmap(bitmap)
+                        }
+                        cursor.close()
+
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
         }
     }
 
@@ -93,12 +130,12 @@ class ContextFragment : Fragment() {
 
     fun Kaydet(view:View) {
         //kotlin android extension kullandığımız için bu şkeilde alabiliyoruz.
-        val postBaslik = tvHeader.text.toString()
-        val postContext = tvPost.text.toString()
+        val postbaslik = tvHeader.text.toString()
+        val postcontext = tvPost.text.toString()
         if(secilenBitmap != null) {
             val kucukBitmap = bitmapKucult(secilenBitmap!!, 300) //ideal değeri deneyerek bul.
             val outputStream = ByteArrayOutputStream()
-            kucukBitmap.compress(Bitmap.CompressFormat.PNG, 70, outputStream)
+            kucukBitmap.compress(Bitmap.CompressFormat.PNG, 50, outputStream)
             val byteDizisi = outputStream.toByteArray()
 
             // SQL e Kaydetme İşlemi
@@ -108,8 +145,8 @@ class ContextFragment : Fragment() {
                     db.execSQL("CREATE TABLE IF NOT EXISTS posts (id INTEGER PRIMARY KEY, postbaslik VARCHAR, posticerik VARCHAR, gorsel BLOB)")
                     val sqlString = "INSERT INTO posts (postbaslik, posticerik, gorsel) VALUES (?,?,?)"
                     val statement = db.compileStatement(sqlString)
-                    statement.bindString(1,postBaslik)
-                    statement.bindString(2,postContext)
+                    statement.bindString(1,postbaslik)
+                    statement.bindString(2,postcontext)
                     statement.bindBlob(3,byteDizisi)
                     statement.execute()
 
